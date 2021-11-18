@@ -51,6 +51,21 @@ jobs:
       linux-arm-sha: ${{ steps.sha.outputs.linux-arm-sha256 }}
       win-x64-sha: ${{ steps.sha.outputs.win-x64-sha256 }}
       osx-x64-sha: ${{ steps.sha.outputs.osx-x64-sha256 }}
+      linux-x64-sha-noexternals: ${{ steps.sha_externals.outputs.linux-x64-sha256 }}
+      linux-arm64-sha-noexternals: ${{ steps.sha_externals.outputs.linux-arm64-sha256 }}
+      linux-arm-sha-noexternals: ${{ steps.sha_externals.outputs.linux-arm-sha256 }}
+      win-x64-sha-noexternals: ${{ steps.sha_externals.outputs.win-x64-sha256 }}
+      osx-x64-sha-noexternals: ${{ steps.sha_externals.outputs.osx-x64-sha256 }}
+      linux-x64-sha-noruntime: ${{ steps.sha_noruntime.outputs.linux-x64-sha256 }}
+      linux-arm64-sha-noruntime: ${{ steps.sha_noruntime.outputs.linux-arm64-sha256 }}
+      linux-arm-sha-noruntime: ${{ steps.sha_noruntime.outputs.linux-arm-sha256 }}
+      win-x64-sha-noruntime: ${{ steps.sha_noruntime.outputs.win-x64-sha256 }}
+      osx-x64-sha-noruntime: ${{ steps.sha_noruntime.outputs.osx-x64-sha256 }}
+      linux-x64-sha-noruntime-noexternals: ${{ steps.sha_noruntime_noexternals.outputs.linux-x64-sha256 }}
+      linux-arm64-sha-noruntime-noexternals: ${{ steps.sha_noruntime_noexternals.outputs.linux-arm64-sha256 }}
+      linux-arm-sha-noruntime-noexternals: ${{ steps.sha_noruntime_noexternals.outputs.linux-arm-sha256 }}
+      win-x64-sha-noruntime-noexternals: ${{ steps.sha_noruntime_noexternals.outputs.win-x64-sha256 }}
+      osx-x64-sha-noruntime-noexternals: ${{ steps.sha_noruntime_noexternals.outputs.osx-x64-sha256 }}
     strategy:
       matrix:
         runtime: [ linux-x64, linux-arm64, linux-arm, win-x64, osx-x64 ]
@@ -124,6 +139,33 @@ jobs:
       id: sha
       name: Compute SHA256
       working-directory: _package
+    - run: |
+        file=$(ls)
+        sha=$(sha256sum $file | awk '{ print $1 }')
+        echo "Computed sha256: $sha for $file"
+        echo "::set-output name=${{matrix.runtime}}-sha256::$sha"
+      shell: bash
+      id: sha_noexternals
+      name: Compute SHA256
+      working-directory: _package_trims/trim_externals
+    - run: |
+        file=$(ls)
+        sha=$(sha256sum $file | awk '{ print $1 }')
+        echo "Computed sha256: $sha for $file"
+        echo "::set-output name=${{matrix.runtime}}-sha256::$sha"
+      shell: bash
+      id: sha_noruntime
+      name: Compute SHA256
+      working-directory: _package_trims/trim_runtime
+    - run: |
+        file=$(ls)
+        sha=$(sha256sum $file | awk '{ print $1 }')
+        echo "Computed sha256: $sha for $file"
+        echo "::set-output name=${{matrix.runtime}}-sha256::$sha"
+      shell: bash
+      id: sha_noruntime_noexternals
+      name: Compute SHA256
+      working-directory: _package_trims/trim_runtime_externals
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -154,6 +196,21 @@ jobs:
           releaseNote = releaseNote.replace(/<LINUX_X64_SHA>/g, '${{needs.build.outputs.linux-x64-sha}}')
           releaseNote = releaseNote.replace(/<LINUX_ARM_SHA>/g, '${{needs.build.outputs.linux-arm-sha}}')
           releaseNote = releaseNote.replace(/<LINUX_ARM64_SHA>/g, '${{needs.build.outputs.linux-arm64-sha}}')
+          releaseNote = releaseNote.replace(/<WIN_X64_SHA_NOEXTERNALS>/g, '${{needs.build.outputs.win-x64-sha-noexternals}}')
+          releaseNote = releaseNote.replace(/<OSX_X64_SHA_NOEXTERNALS>/g, '${{needs.build.outputs.osx-x64-sha-noexternals}}')
+          releaseNote = releaseNote.replace(/<LINUX_X64_SHA_NOEXTERNALS>/g, '${{needs.build.outputs.linux-x64-sha-noexternals}}')
+          releaseNote = releaseNote.replace(/<LINUX_ARM_SHA_NOEXTERNALS>/g, '${{needs.build.outputs.linux-arm-sha-noexternals}}')
+          releaseNote = releaseNote.replace(/<LINUX_ARM64_SHA_NOEXTERNALS>/g, '${{needs.build.outputs.linux-arm64-sha-noexternals}}')
+          releaseNote = releaseNote.replace(/<WIN_X64_SHA_NORUNTIME>/g, '${{needs.build.outputs.win-x64-sha-noruntime}}')
+          releaseNote = releaseNote.replace(/<OSX_X64_SHA_NORUNTIME>/g, '${{needs.build.outputs.osx-x64-sha-noruntime}}')
+          releaseNote = releaseNote.replace(/<LINUX_X64_SHA_NORUNTIME>/g, '${{needs.build.outputs.linux-x64-sha-noruntime}}')
+          releaseNote = releaseNote.replace(/<LINUX_ARM_SHA_NORUNTIME>/g, '${{needs.build.outputs.linux-arm-sha-noruntime}}')
+          releaseNote = releaseNote.replace(/<LINUX_ARM64_SHA_NORUNTIME>/g, '${{needs.build.outputs.linux-arm64-sha-noruntime}}')
+          releaseNote = releaseNote.replace(/<WIN_X64_SHA_NORUNTIME_NOEXTERNALS>/g, '${{needs.build.outputs.win-x64-sha-noruntime-noexternals}}')
+          releaseNote = releaseNote.replace(/<OSX_X64_SHA_NORUNTIME_NOEXTERNALS>/g, '${{needs.build.outputs.osx-x64-sha-noruntime-noexternals}}')
+          releaseNote = releaseNote.replace(/<LINUX_X64_SHA_NORUNTIME_NOEXTERNALS>/g, '${{needs.build.outputs.linux-x64-sha-noruntime-noexternals}}')
+          releaseNote = releaseNote.replace(/<LINUX_ARM_SHA_NORUNTIME_NOEXTERNALS>/g, '${{needs.build.outputs.linux-arm-sha-noruntime-noexternals}}')
+          releaseNote = releaseNote.replace(/<LINUX_ARM64_SHA_NORUNTIME_NOEXTERNALS>/g, '${{needs.build.outputs.linux-arm64-sha-noruntime-noexternals}}')
           console.log(releaseNote)
           core.setOutput('version', runnerVersion);
           core.setOutput('note', releaseNote);

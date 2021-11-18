@@ -510,6 +510,62 @@ namespace GitHub.Runner.Listener
                 IOUtil.DeleteFile(destination);
                 file.CopyTo(destination, true);
             }
+
+            if (runtimeTrimmed)
+            {
+                // try run the runner executable to see if current dotnet runtime + future runner binary works fine.
+                var newRunnerBinary = Path.Combine(binVersionDir, "Runner.Listener");
+                using (var p = HostContext.CreateService<IProcessInvoker>())
+                {
+                    p.ErrorDataReceived += (_, data) =>
+                    {
+                        if (!string.IsNullOrEmpty(data.Data))
+                        {
+                            Trace.Error(data.Data);
+                        }
+                    };
+                    p.OutputDataReceived += (_, data) =>
+                    {
+                        if (!string.IsNullOrEmpty(data.Data))
+                        {
+                            Trace.Info(data.Data);
+                        }
+                    };
+                    var exitCode = await p.ExecuteAsync(HostContext.GetDirectory(WellKnownDirectory.Root), newRunnerBinary, "--version", null, token);
+                    if (exitCode != 0)
+                    {
+                        Trace.Error($"{newRunnerBinary} --version failed with exit code {exitCode}");
+                    }
+                }
+            }
+
+            if (externalsTrimmed)
+            {
+                // try run node.js to see if current node.js works fine after copy over to new location.
+                var newNodeBinary = Path.Combine(externalsVersionDir, "bin", "node");
+                using (var p = HostContext.CreateService<IProcessInvoker>())
+                {
+                    p.ErrorDataReceived += (_, data) =>
+                    {
+                        if (!string.IsNullOrEmpty(data.Data))
+                        {
+                            Trace.Error(data.Data);
+                        }
+                    };
+                    p.OutputDataReceived += (_, data) =>
+                    {
+                        if (!string.IsNullOrEmpty(data.Data))
+                        {
+                            Trace.Info(data.Data);
+                        }
+                    };
+                    var exitCode = await p.ExecuteAsync(HostContext.GetDirectory(WellKnownDirectory.Root), newNodeBinary, "--version", null, token);
+                    if (exitCode != 0)
+                    {
+                        Trace.Error($"{newNodeBinary} --version failed with exit code {exitCode}");
+                    }
+                }
+            }
         }
 
         private void DeletePreviousVersionRunnerBackup(CancellationToken token)
