@@ -103,10 +103,14 @@ jobs:
     # Since each package name is unique, so we don't need to put ${{matrix}} info into artifact name
     - name: Publish Artifact
       if: github.event_name != 'pull_request'
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: runner-packages
-        path: _package
+        path: |
+          _package
+          _package_trims/trim_externals
+          _package_trims/trim_runtime
+          _package_trims/trim_runtime_externals
     # compute shas and set as job outputs to use in release notes
     - run: brew install coreutils #needed for shasum util
       if: ${{ matrix.os == 'macOS-latest' }}
