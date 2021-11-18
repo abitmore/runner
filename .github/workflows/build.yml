@@ -63,6 +63,16 @@ jobs:
       run: |
         ${{ matrix.devScript }} package Release
       working-directory: src
+    
+    - name: Compute runtime and externals Hash
+      if: github.event_name != 'pull_request'
+      shell: bash
+      run: |
+        echo "Dotnet runtime hash result: $DOTNET_RUNTIME_HASH"
+        echo "Externals hash result: $EXTERNALS_HASH"
+      env:
+        DOTNET_RUNTIME_HASH: ${{hashFiles('**/_layout_trims/runtime/**/*')}}
+        EXTERNALS_HASH: ${{hashFiles('**/_layout_trims/externals/**/*')}}
 
     # Upload runner package tar.gz/zip as artifact
     - name: Publish Artifact
